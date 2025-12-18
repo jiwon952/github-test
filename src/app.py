@@ -48,3 +48,15 @@ def command_shell(user_input):
 if __name__ == "__main__":
     # 일부는 실행되면 에러가 나지만, 실행이 목적이 아니라 "정적 분석 이슈" 확인용
     print(division(1, 0))
+import hashlib
+import subprocess
+
+def hotspot_hardcoded_password():
+    password = "P@ssw0rd"   # ← 이 패턴은 Hotspot으로 잡히는 경우가 많음
+    return password
+
+def hotspot_weak_crypto(pw: str) -> str:
+    return hashlib.md5(pw.encode("utf-8")).hexdigest()  # 약한 해시
+
+def hotspot_command_injection(user_input: str):
+    subprocess.run("echo " + user_input, shell=True, check=False)  # shell=True
