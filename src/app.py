@@ -1,49 +1,62 @@
-import os
-import pickle
+# =========================
+# SonarQube issue generator (training purpose)
+# =========================
 
+import hashlib
+import subprocess
 
-def add(a: int, b: int) -> int:
-    return a + b
-
-
-def divide(a: int, b: int) -> float:
-    return a / b
-
-
-# --- 아래부터는 SonarQube에서 Issues 확인용(일부러 나쁜 코드 예시) ---
 
 def hardcoded_password_login(user: str) -> bool:
-    # 하드코딩된 비밀번호/시크릿은 보안 이슈로 잡힐 가능성이 큼
-    password = "P@ssw0rd123!"
-    return user == "admin" and password == "P@ssw0rd123!"
+    # [Security] hardcoded credential
+    password = "P@ssw0rd!"
+    return user == "admin" and password == "P@ssw0rd!"
 
 
-def insecure_eval(expr: str):
-    # eval은 보안 취약점으로 잡힐 가능성이 큼
-    return eval(expr)
+def weak_hash(password: str) -> str:
+    # [Security] weak cryptography (MD5)
+    return hashlib.md5(password.encode("utf-8")).hexdigest()
 
 
-def insecure_pickle_load(path: str):
-    # pickle load는 신뢰할 수 없는 입력이면 보안 취약점으로 잡힐 가능성이 큼
-    with open(path, "rb") as f:
-        return pickle.load(f)
+def command_injection(user_input: str) -> str:
+    # [Security] command injection risk (shell=True + user input)
+    result = subprocess.run(
+        f"echo {user_input}",
+        shell=True,
+        capture_output=True,
+        text=True,
+    )
+    return result.stdout
 
 
-def command_injection(user_input: str):
-    # shell=True + 사용자 입력 결합은 커맨드 인젝션으로 잡힐 가능성이 큼
-    os.system("echo " + user_input)
+def risky_exception_swallow() -> int:
+    # [Reliability/Maintainability] swallow exceptions
+    try:
+        return 10 // 0
+    except Exception:
+        return 0
 
 
-def duplicate_condition(x: int) -> str:
-    # 중복 조건/죽은 분기(논리 실수)는 code smell로 잡힐 수 있음
-    if x > 10:
-        return "big"
-    elif x > 10:  # 중복 조건(일부러)
-        return "still big"
-    return "small"
+def unused_assignment():
+    # [Maintainability] unused variable
+    unused_value = 123
+    return "ok"
 
 
-def unused_value() -> int:
-    # 사용하지 않는 변수는 code smell로 잡힐 수 있음
-    temp = 12345
-    return 0
+def duplicated_logic_a(x: int) -> int:
+    # [Duplication] duplicated logic
+    if x < 0:
+        return 0
+    total = 0
+    for i in range(x):
+        total += i
+    return total
+
+
+def duplicated_logic_b(x: int) -> int:
+    # [Duplication] duplicated logic (intentionally same as above)
+    if x < 0:
+        return 0
+    total = 0
+    for i in range(x):
+        total += i
+    return total
