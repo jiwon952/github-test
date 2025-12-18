@@ -1,62 +1,50 @@
-# =========================
-# SonarQube issue generator (training purpose)
-# =========================
-
-import hashlib
 import subprocess
+import sys
 
+def bad_compare(x):
+    # BUG: 항상 True/False 흐름이 이상해질 수 있음 (코드 스멜)
+    return x is 1000
 
-def hardcoded_password_login(user: str) -> bool:
-    # [Security] hardcoded credential
-    password = "P@ssw0rd!"
-    return user == "admin" and password == "P@ssw0rd!"
+def division(a, b):
+    # BUG: 0으로 나누면 런타임 에러 가능
+    return a / b
 
+def index_out_of_range(arr):
+    # BUG: 인덱스 에러 가능
+    return arr[len(arr)]
 
-def weak_hash(password: str) -> str:
-    # [Security] weak cryptography (MD5)
-    return hashlib.md5(password.encode("utf-8")).hexdigest()
+def null_deref():
+    # BUG: NoneType 사용 (AttributeError)
+    obj = None
+    return obj.upper()
 
+def duplicate_logic(n):
+    # CODE SMELL: 중복 로직(duplicated blocks) 유도
+    if n > 0:
+        result = n * 2 + 10
+        result = result - 3
+        result = result * 5
+        return result
+    else:
+        result = n * 2 + 10
+        result = result - 3
+        result = result * 5
+        return result
 
-def command_injection(user_input: str) -> str:
-    # [Security] command injection risk (shell=True + user input)
-    result = subprocess.run(
-        f"echo {user_input}",
-        shell=True,
-        capture_output=True,
-        text=True,
-    )
-    return result.stdout
+def unreachable():
+    # CODE SMELL: 도달 불가능 코드
+    return 1
+    print("never")
 
+def useless():
+    # CODE SMELL: 사용하지 않는 변수
+    temp = 123
+    return 0
 
-def risky_exception_swallow() -> int:
-    # [Reliability/Maintainability] swallow exceptions
-    try:
-        return 10 // 0
-    except Exception:
-        return 0
+def command_shell(user_input):
+    # CODE SMELL/BUG(환경에 따라): shell=True는 위험/경고 대상이 될 수 있음
+    subprocess.run("echo " + user_input, shell=True, check=False)
 
-
-def unused_assignment():
-    # [Maintainability] unused variable
-    unused_value = 123
-    return "ok"
-
-
-def duplicated_logic_a(x: int) -> int:
-    # [Duplication] duplicated logic
-    if x < 0:
-        return 0
-    total = 0
-    for i in range(x):
-        total += i
-    return total
-
-
-def duplicated_logic_b(x: int) -> int:
-    # [Duplication] duplicated logic (intentionally same as above)
-    if x < 0:
-        return 0
-    total = 0
-    for i in range(x):
-        total += i
-    return total
+if __name__ == "__main__":
+    # 일부는 실행되면 에러가 나지만, 실행이 목적이 아니라 "정적 분석 이슈" 확인용
+    print(division(1, 0))
